@@ -1,0 +1,42 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+
+  mongo:
+    image: mongo:7
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  api:
+    build: ./api
+    container_name: api
+    env_file:
+      - ./.env
+      - ./api/.env
+    depends_on:
+      - rabbitmq
+      - mongo
+    ports:
+      - "3000:3000"
+
+  producer:
+    build: ./producer
+    container_name: producer
+    env_file:
+      - ./.env
+      - ./producer/.env
+    depends_on:
+      - rabbitmq
+
+volumes:
+  mongo_data:
